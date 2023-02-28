@@ -40,7 +40,7 @@ class FairseqTransformerHub(GeneratorHubInterface):
                 cfg.task.langs = ",".join(cfg.task.langs)
         super().__init__(cfg, task, models)
         self.eval()
-        # self.to("cuda" if torch.cuda.is_available() else "cpu")
+        self.to("cuda" if torch.cuda.is_available() else "cpu")
         self.fix_multihead_attention()
 
     @classmethod
