@@ -87,15 +87,22 @@ def compute_alti_nllb(
     norm_mode="min_sum",
 ) -> tp.Tuple[np.ndarray, tp.List[str], tp.List[str], tp.List[str]]:
     """Compute ALTI+ matrix and all tokenized sentences using an NLLB-like seq2seq model."""
-    src_tensor, pred_tensor, tgt_tensor = binarize_pair(
-        hub,
-        input_text,
-        output_text,
-        src_lang=src_lang,
-        tgt_lang=tgt_lang,
-        max_length=max_length,
-    )
+    # src_tensor, pred_tensor, tgt_tensor = binarize_pair(
+    #     hub,
+    #     input_text,
+    #     output_text,
+    #     src_lang=src_lang,
+    #     tgt_lang=tgt_lang,
+    #     max_length=max_length,
+    # )
 
+    # Transform input_text and output_text strings with the ids into numpy arrays with the ids
+    # e.g '[1, 2, 3]' to np.array([1, 2, 3])
+    # input_text_tsr = torch.tensor([int(x) for x in input_text.strip('[]').split(', ')], device=hub.device)
+    # output_text_tsr = torch.tensor([int(x) for x in output_text.strip('[]').split(', ')], device=hub.device)
+
+    src_tensor, pred_tensor, tgt_tensor = (input_text, output_text[1:], output_text)
+    
     source_sentence = hub.decode2(src_tensor, hub.task.source_dictionary)
     target_sentence = hub.decode2(tgt_tensor, hub.task.target_dictionary)
     predicted_sentence = hub.decode2(pred_tensor, hub.task.target_dictionary)
@@ -145,31 +152,31 @@ def compute_alti_metrics(
     if skip_first:  # skip first token if it is special (e.g. language token after BOS)
         sc = sc[1:, :]
     src_ax, tgt_ax = 0, 1
-    total_sc_by_source_token = sc.sum(src_ax)
+    # total_sc_by_source_token = sc.sum(src_ax)
     total_sc_by_target_token = sc.sum(tgt_ax)
-    max_sc_by_source_token = sc.max(src_ax)
-    max_sc_by_target_token = sc.max(tgt_ax)
+    # max_sc_by_source_token = sc.max(src_ax)
+    # max_sc_by_target_token = sc.max(tgt_ax)
     return dict(
         # detecting hallucinations by averaging over the predicted tokens
         avg_sc=total_sc_by_target_token.mean(),
-        min_sc=total_sc_by_target_token.min(),
-        top_sc_mean=max_sc_by_target_token.mean(),
-        top_sc_min=max_sc_by_target_token.min(),
-        sc_above_50=(total_sc_by_target_token >= 0.5).mean(),
-        sc_above_40=(total_sc_by_target_token >= 0.4).mean(),
-        sc_above_30=(total_sc_by_target_token >= 0.3).mean(),
-        sc_above_20=(total_sc_by_target_token >= 0.2).mean(),
-        sc_above_10=(total_sc_by_target_token >= 0.1).mean(),
-        sc_share_wo_eos=1 - sc[:, -1].sum() / sc.sum(),
-        avg_sc_wo_eos=sc[:, :-1].sum(tgt_ax).mean(),
-        avg_sc_wo_lang=sc[1:, :].sum(tgt_ax).mean(),
-        sc_entropy=entropy(total_sc_by_target_token / total_sc_by_target_token.sum()),
-        # detecting undertranslations by averaging over the source tokens
-        src_max_contr_below_001=(max_sc_by_source_token < 0.01).mean(),
-        src_max_contr_min=max_sc_by_source_token.min(),
-        src_sum_contr_below_01=(total_sc_by_source_token < 0.10).mean(),
-        src_sum_contr_mean=total_sc_by_source_token.mean(),
-        src_sum_contr_min=total_sc_by_source_token.min(),
+        # min_sc=total_sc_by_target_token.min(),
+        # top_sc_mean=max_sc_by_target_token.mean(),
+        # top_sc_min=max_sc_by_target_token.min(),
+        # sc_above_50=(total_sc_by_target_token >= 0.5).mean(),
+        # sc_above_40=(total_sc_by_target_token >= 0.4).mean(),
+        # sc_above_30=(total_sc_by_target_token >= 0.3).mean(),
+        # sc_above_20=(total_sc_by_target_token >= 0.2).mean(),
+        # sc_above_10=(total_sc_by_target_token >= 0.1).mean(),
+        # sc_share_wo_eos=1 - sc[:, -1].sum() / sc.sum(),
+        # avg_sc_wo_eos=sc[:, :-1].sum(tgt_ax).mean(),
+        # avg_sc_wo_lang=sc[1:, :].sum(tgt_ax).mean(),
+        # sc_entropy=entropy(total_sc_by_target_token / total_sc_by_target_token.sum()),
+        # # detecting undertranslations by averaging over the source tokens
+        # src_max_contr_below_001=(max_sc_by_source_token < 0.01).mean(),
+        # src_max_contr_min=max_sc_by_source_token.min(),
+        # src_sum_contr_below_01=(total_sc_by_source_token < 0.10).mean(),
+        # src_sum_contr_mean=total_sc_by_source_token.mean(),
+        # src_sum_contr_min=total_sc_by_source_token.min(),
     )
 
 
@@ -192,15 +199,15 @@ def compute_alti_scores_for_batch(
         )
         metrics = compute_alti_metrics(token_level_alti, src_toks, tgt_toks, pred_toks)
         results.append(metrics)
-        # TODO: find a better alignment algorithm
-        alignment = [
-            (int(x), int(y))
-            for x, y in zip(*np.where(token_level_alti > alignment_threshold))
-        ]
+        # # TODO: find a better alignment algorithm
+        # alignment = [
+        #     (int(x), int(y))
+        #     for x, y in zip(*np.where(token_level_alti > alignment_threshold))
+        # ]
         alignments.append(
             {
                 "contributions": token_level_alti.tolist(),
-                "alignment": alignment,
+                # "alignment": alignment,
                 "src_toks": src_toks,
                 "tgt_toks": tgt_toks,
                 "pred_toks": pred_toks,

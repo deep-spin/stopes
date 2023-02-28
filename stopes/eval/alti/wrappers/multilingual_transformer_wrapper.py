@@ -11,6 +11,7 @@ import logging
 from collections import defaultdict
 from functools import partial
 from typing import Dict, List
+from wrappers.interactive import *
 
 import torch
 from fairseq import utils
@@ -21,6 +22,7 @@ from omegaconf import open_dict
 from .transformer_wrapper import FairseqTransformerHub
 
 logger = logging.getLogger(__name__)
+M2M_LANGS = "sk,ka,or,gd,br,ta,tn,lb,ast,mg,ga,id,mn,tr,is,ss,bn,kk,ne,wo,el,ar,sr,lv,hr,yo,ml,zu,hy,so,yi,pt,ceb,cy,de,ca,no,ff,ns,sq,gl,hi,ps,sl,am,km,ba,sd,si,ms,az,gu,uz,af,uk,ha,zh,ro,tl,ig,et,da,ko,bs,pa,lo,he,be,jv,mr,xh,ja,nl,cs,kn,ilo,ln,mk,ru,pl,th,su,es,ur,lg,fr,lt,en,it,vi,ht,bg,sv,oc,fi,my,hu,fa,sw,fy"
 
 
 class FairseqMultilingualTransformerHub(FairseqTransformerHub):
@@ -90,13 +92,13 @@ class FairseqMultilingualTransformerHub(FairseqTransformerHub):
         }
 
     def get_interactive_sample(
-        self, i, test_set_dir, src, tgt, tokenizer, hallucination=None
+        self, i, test_spm_dir, test_tks_dir, src, tgt, tokenizer, hallucination=None
     ):
         """Get interactive sample from tokenized and original word files."""
-        test_src_bpe = f"{test_set_dir}/test.{tokenizer}.{src}"
-        test_tgt_bpe = f"{test_set_dir}/test.{tokenizer}.{tgt}"
-        test_src_word = f"{test_set_dir}/test.{src}"
-        test_tgt_word = f"{test_set_dir}/test.{tgt}"
+        test_src_bpe = f"{test_spm_dir}/test.{tokenizer}.{src}"
+        test_tgt_bpe = f"{test_spm_dir}/test.{tokenizer}.{tgt}"
+        test_src_word = f"{test_tks_dir}/test.{src}"
+        test_tgt_word = f"{test_tks_dir}/test.{tgt}"
 
         with open(test_src_bpe, encoding="utf-8") as fbpe:
             # BPE source sentences
