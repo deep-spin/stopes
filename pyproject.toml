@@ -9,12 +9,7 @@ authors = [{name = "Facebook AI Research"}]
 requires-python = ">=3.8"
 dynamic = ["version", "description"]
 
-dependencies = [
-  "hydra-core>=1.2.0",
-  "submitit>=1.4.5",
-  "tqdm",
-  "joblib",
-]
+
 # zip_safe = false
 classifiers=[
     "License :: OSI Approved :: MIT License",
@@ -43,7 +38,6 @@ classifiers=[
 #    "fairseq==0.12.1",
     "faiss-cpu",
     "sentencepiece",
-    "numpy>=1.21",
   ]
   mining_gpu = [
     "faiss-gpu",
@@ -83,9 +77,6 @@ classifiers=[
   ]
   alti = [
     "einops",
-    "numpy",
-    "omegaconf",
-    "torch",
     # fairseq is also a dependency, but it must be installed separately
   ]
 
